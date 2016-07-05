@@ -29,6 +29,7 @@ extern zend_module_entry wordsfilter_module_entry;
 #define PHP_WORDSFILTER_VERSION "0.1.0" /* Replace with version number for your extension */
 #define PHP_TRIE_FILTER_RES_NAME "wordsfilter" /* resource name */
 #define ALPHA_CHARSET "UCS-4LE" /* charset of alphachar */
+#define KEYWORD_MAX_LEN 1024
 
 #ifdef PHP_WIN32
 #	define PHP_WORDSFILTER_API __declspec(dllexport)
