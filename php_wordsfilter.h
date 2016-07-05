@@ -12,12 +12,14 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: ChickCao                                                     |
   +----------------------------------------------------------------------+
 */
 
 /* $Id$ */
 
+#include "iconv.h"
+#include "datrie/trie.h"
 #ifndef PHP_WORDSFILTER_H
 #define PHP_WORDSFILTER_H
 
@@ -25,6 +27,8 @@ extern zend_module_entry wordsfilter_module_entry;
 #define phpext_wordsfilter_ptr &wordsfilter_module_entry
 
 #define PHP_WORDSFILTER_VERSION "0.1.0" /* Replace with version number for your extension */
+#define PHP_TRIE_FILTER_RES_NAME "wordsfilter" /* resource name */
+#define ALPHA_CHARSET "UCS-4LE" /* charset of alphachar */
 
 #ifdef PHP_WIN32
 #	define PHP_WORDSFILTER_API __declspec(dllexport)
@@ -37,6 +41,7 @@ extern zend_module_entry wordsfilter_module_entry;
 #ifdef ZTS
 #include "TSRM.h"
 #endif
+
 
 /*
   	Declare any global variables you may need between the BEGIN

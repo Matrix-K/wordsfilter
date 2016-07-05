@@ -34,6 +34,90 @@ ZEND_DECLARE_MODULE_GLOBALS(wordsfilter)
 /* True global resources - no need for thread safety here */
 static int le_wordsfilter;
 
+static void php_trie_filter_dtor(zend_resource *rsrc TSRMLS_DC)
+{
+	Trie *trie = (Trie *)rsrc->ptr;
+	trie_free(trie);
+}
+
+static int trie_search_one(Trie *trie, const AlphaChar *text, int *offset, TrieData *length)
+{
+	TrieState *s;
+	const AlphaChar *p;
+	const AlphaChar *base;
+
+	base = text;
+    if (! (s = trie_root(trie))) {
+        return -1;
+    }
+
+	while (*text) {		
+		p = text;
+		if (! trie_state_is_walkable(s, *p)) {
+            trie_state_rewind(s);
+			text++;
+			continue;
+		} else {
+			trie_state_walk(s, *p++);
+        }
+
+		while (trie_state_is_walkable(s, *p) && ! trie_state_is_terminal(s))
+			trie_state_walk(s, *p++);
+
+		if (trie_state_is_terminal(s)) {
+			*offset = text - base;
+			*length = p - text;
+            trie_state_free(s);
+            
+			return 1;
+		}
+
+        trie_state_rewind(s);
+		text++;
+	}
+    trie_state_free(s);
+
+	return 0;
+}
+
+static int trie_search_all(Trie *trie, const AlphaChar *text, zval *data)
+{
+	TrieState *s;
+	const AlphaChar *p;
+	const AlphaChar *base;
+    zval *word = NULL;
+
+	base = text;
+    if (! (s = trie_root(trie))) {
+        return -1;
+    }
+
+    while (*text) {   
+        p = text;
+        if(! trie_state_is_walkable(s, *p)) {
+            trie_state_rewind(s);
+            text++;
+            continue;
+        }
+
+        while(*p && trie_state_is_walkable(s, *p) && ! trie_state_is_leaf(s)) {
+            trie_state_walk(s, *p++);  
+            if (trie_state_is_terminal(s)) { 
+                zval *word;
+                array_init_size(word, 3);
+                add_next_index_long(word, text - base);
+                add_next_index_long(word, p - text);
+                add_next_index_zval(data, word);        
+            }        
+        }
+        trie_state_rewind(s);
+        text++;
+    }
+    trie_state_free(s);
+
+	return 0;
+}
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -48,24 +132,15 @@ PHP_INI_END()
    so that your module can be compiled into PHP, it exists only for testing
    purposes. */
 
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_wordsfilter_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-// PHP_FUNCTION(confirm_wordsfilter_compiled)
-// {
-// 	char *arg = NULL;
-// 	size_t arg_len, len;
-// 	zend_string *strg;
+PHP_FUNCTION(wordsfilter_search)
+{
 
-// 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
-// 		return;
-// 	}
+}
 
-// 	strg = strpprintf(0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "wordsfilter", arg);
-
-// 	RETURN_STR(strg);
-// }
-/* }}} */
+PHP_FUNCTION(wordsfilter_new)
+{
+	
+}
 /* The previous line is meant for vim and emacs, so it can correctly fold and
    unfold functions in source code. See the corresponding marks just before
    function definition, where the functions purpose is also documented. Please
@@ -91,6 +166,10 @@ PHP_MINIT_FUNCTION(wordsfilter)
 	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
 	*/
+	le_trie_filter = zend_register_list_destructors_ex(
+			php_trie_filter_dtor, 
+			NULL, PHP_TRIE_FILTER_RES_NAME, module_number);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -147,6 +226,8 @@ PHP_MINFO_FUNCTION(wordsfilter)
  */
 const zend_function_entry wordsfilter_functions[] = {
 	// PHP_FE(confirm_wordsfilter_compiled,	NULL)		/* For testing, remove later. */
+	PHP_FE(wordsfilter_search,NULL) 	/* search words in text */
+	PHP_FE(wordsfilter_new,NULL) 		/* init a words filter instance */
 	PHP_FE_END	/* Must be the last line in wordsfilter_functions[] */
 };
 /* }}} */
