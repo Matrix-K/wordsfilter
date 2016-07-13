@@ -2,8 +2,11 @@
 a extension for php to filter some keywords and senstive words
 
 # Install 
+
 1.Download the repo from master branch
-2.Install libdatrie library
+
+2.Install libdatrie library(use ftp tools to download)
+
 3.Install the extensions
 
 # How to Use
@@ -48,7 +51,4 @@ function print_all($str, $res) {//print_r($res);
         echo $k."=>{$v[0]}-{$v[1]}-".substr($str, $v[0], $v[1])."\n";
     }
 }
-
-
-
 ```

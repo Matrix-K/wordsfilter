@@ -250,13 +250,6 @@ PHP_FUNCTION(wordsfilter_search)
     {
     	RETURN_FALSE;
     }
-	// zend_fetch_resource(&trie_resource, PHP_TRIE_FILTER_RES_NAME , -1);
-	// zend_fetch_resource(trie, Trie *, &trie_resource, -1, PHP_TRIE_FILTER_RES_NAME, le_wordsfilter);
-
-	// if((trie = (Trie *)zend_fetch_resource2(Z_RES_P(trie_resource),PHP_TRIE_FILTER_RES_NAME,le_wordsfilter,NULL)) == NULL)
-	// {
-	// 	RETURN_FALSE;
-	// }
 
 	alpha_text = emalloc(sizeof(AlphaChar) * (text_len + 1));
 
