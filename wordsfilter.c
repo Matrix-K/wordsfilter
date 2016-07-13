@@ -47,19 +47,19 @@ static int trie_search_one(Trie *trie, const AlphaChar *text, int *offset, TrieD
 	const AlphaChar *base;
 
 	base = text;
-    if (! (s = trie_root(trie))) {
-        return -1;
-    }
+    	if (! (s = trie_root(trie))) {
+        	return -1;
+    	}
 
 	while (*text) {		
 		p = text;
 		if (! trie_state_is_walkable(s, *p)) {
-            trie_state_rewind(s);
+            		trie_state_rewind(s);
 			text++;
 			continue;
 		} else {
 			trie_state_walk(s, *p++);
-        }
+        	}
 
 		while (trie_state_is_walkable(s, *p) && ! trie_state_is_terminal(s))
 			trie_state_walk(s, *p++);
@@ -67,15 +67,15 @@ static int trie_search_one(Trie *trie, const AlphaChar *text, int *offset, TrieD
 		if (trie_state_is_terminal(s)) {
 			*offset = text - base;
 			*length = p - text;
-            trie_state_free(s);
+            		trie_state_free(s);
             
 			return 1;
 		}
 
-        trie_state_rewind(s);
+        	trie_state_rewind(s);
 		text++;
 	}
-    trie_state_free(s);
+    	trie_state_free(s);
 
 	return 0;
 }
@@ -85,35 +85,40 @@ static int trie_search_all(Trie *trie, const AlphaChar *text, zval *data)
 	TrieState *s;
 	const AlphaChar *p;
 	const AlphaChar *base;
-    zval *word = NULL;
+    	zval *word = NULL;
 
 	base = text;
-    if (! (s = trie_root(trie))) {
-        return -1;
-    }
+    	if (! (s = trie_root(trie))) 
+    	{
+        	return -1;
+    	}
 
-    while (*text) {   
-        p = text;
-        if(! trie_state_is_walkable(s, *p)) {
-            trie_state_rewind(s);
-            text++;
-            continue;
-        }
+    	while (*text) 
+    	{   
+        	p = text;
+        	if(! trie_state_is_walkable(s, *p)) 
+        	{
+            		trie_state_rewind(s);
+            		text++;
+            		continue;
+        	}
 
-        while(*p && trie_state_is_walkable(s, *p) && ! trie_state_is_leaf(s)) {
-            trie_state_walk(s, *p++);  
-            if (trie_state_is_terminal(s)) { 
-                zval *word;
-                array_init_size(word, 3);
-                add_next_index_long(word, text - base);
-                add_next_index_long(word, p - text);
-                add_next_index_zval(data, word);        
-            }        
-        }
-        trie_state_rewind(s);
-        text++;
-    }
-    trie_state_free(s);
+        	while(*p && trie_state_is_walkable(s, *p) && ! trie_state_is_leaf(s)) 
+        	{
+            		trie_state_walk(s, *p++);  
+            		if (trie_state_is_terminal(s)) 
+            		{ 
+                		zval *word;
+				array_init_size(word, 3);
+                		add_next_index_long(word, text - base);
+                		add_next_index_long(word, p - text);
+                		add_next_index_zval(data, word);        
+            		}        
+        	}
+        	trie_state_rewind(s);
+        	text++;
+    	}
+    	trie_state_free(s);
 
 	return 0;
 }
@@ -134,7 +139,7 @@ PHP_INI_END()
 
 PHP_FUNCTION(wordsfilter_create_instance)
 {
-	Trie *trie;
+    Trie *trie;
     AlphaMap *alpha_map;
     int ret;
 
@@ -160,16 +165,16 @@ PHP_FUNCTION(wordsfilter_create_instance)
 
 PHP_FUNCTION(wordsfilter_create_word)
 {
-	Trie *trie;
-	zval *trie_resource;
-	char *keyword, *p;
-	int keyword_len, i;
+    Trie *trie;
+    zval *trie_resource;
+    char *keyword, *p;
+    int keyword_len, i;
     AlphaChar alpha_key[KEYWORD_MAX_LEN+1];
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", 
-				&trie_resource, &keyword, &keyword_len) == FAILURE) {
-		RETURN_FALSE;
-	}
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "rs", 
+				&trie_resource, &keyword, &keyword_len) == FAILURE) 
+    {
+    	RETURN_FALSE;
+    }
 
     if (keyword_len > KEYWORD_MAX_LEN || keyword_len < 1) {
         php_error_docref(NULL TSRMLS_CC, E_WARNING, "keyword should has [1, %d] bytes", KEYWORD_MAX_LEN);
@@ -199,7 +204,7 @@ PHP_FUNCTION(wordsfilter_create_word)
 
 PHP_FUNCTION(wordsfilter_save)
 {
-	Trie *trie;
+    Trie *trie;
     zval *trie_resource;
     char *filename;
     int filename_len;
